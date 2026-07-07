@@ -1,0 +1,6 @@
+{
+  "name": "Cloudflare AI Script Generator",
+  "description": "Generator skrip Python profesional untuk Cloudflare Workers AI beserta antarmuka pengujian.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

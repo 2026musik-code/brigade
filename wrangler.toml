@@ -1,0 +1,10 @@
+name = "cfai"
+main = "src/worker.ts"
+compatibility_date = "2024-04-05"
+
+[[kv_namespaces]]
+binding = "userkey"
+id = "324786888f8a40318c2489d755443036"
+
+[assets]
+directory = "dist"
