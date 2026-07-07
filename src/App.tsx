@@ -87,8 +87,18 @@ export default function App() {
     if (currentView === 'user_select') {
       fetch('/api/users')
         .then(res => res.json())
-        .then(data => setSavedUsers(data))
-        .catch(err => console.error("Failed to fetch users:", err));
+        .then(data => {
+          if (Array.isArray(data)) {
+            setSavedUsers(data);
+          } else {
+            console.error("Expected array from /api/users, got:", data);
+            setSavedUsers([]);
+          }
+        })
+        .catch(err => {
+          console.error("Failed to fetch users:", err);
+          setSavedUsers([]);
+        });
     }
   }, [currentView]);
 
@@ -496,13 +506,13 @@ export default function App() {
           </div>
           
           <div className="grid grid-cols-2 gap-4 sm:gap-12 w-full max-w-4xl justify-items-center">
-            {savedUsers.filter(user => user.name.toLowerCase().includes(searchQuery.toLowerCase())).length === 0 ? (
+            {(savedUsers || []).filter(user => (user?.name || "").toLowerCase().includes(searchQuery.toLowerCase())).length === 0 ? (
               <div className="text-gray-500 italic col-span-2 text-center">
                 {searchQuery ? 'Pengguna tidak ditemukan.' : 'Belum ada pengguna yang disimpan.'}
               </div>
             ) : (
-              savedUsers
-                .filter(user => user.name.toLowerCase().includes(searchQuery.toLowerCase()))
+              (savedUsers || [])
+                .filter(user => (user?.name || "").toLowerCase().includes(searchQuery.toLowerCase()))
                 .map((user, idx) => {
                 // Different color gradients based on index
                 const gradients = [
