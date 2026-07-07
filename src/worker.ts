@@ -381,8 +381,17 @@ class AIClient:
                 response = requests.post(url, headers=headers, json=payload, timeout=60)
                 response.raise_for_status()
                 res_data = response.json()
-                if 'result' in res_data and 'response' in res_data['result']:
-                    reply = res_data['result']['response']
+                if 'result' in res_data:
+                    if 'response' in res_data['result']:
+                        reply = res_data['result']['response']
+                    elif 'choices' in res_data['result'] and len(res_data['result']['choices']) > 0:
+                        reply = res_data['result']['choices'][0]['message']['content']
+                    else:
+                        return str(res_data)
+                    self.history.append({"role": "assistant", "content": reply})
+                    return reply
+                elif 'choices' in res_data and len(res_data['choices']) > 0:
+                    reply = res_data['choices'][0]['message']['content']
                     self.history.append({"role": "assistant", "content": reply})
                     return reply
                 return str(res_data)
@@ -447,7 +456,8 @@ def main():
                     content = msg['content'].split(']\\n\\n')[-1] if '[System Context:' in msg['content'] else msg['content']
                     print(f"\\n\\033[1;34m[You]:\\033[0m {content}")
                 elif msg['role'] == 'assistant':
-                    print(f"\\033[1;32m[AI]:\\033[0m {msg['content']}")
+                    print(f"\\033[1;32m[AI]:\\033[0m\\n{msg['content']}")
+                    print("\\033[1;30m" + "-"*50 + "\\033[0m")
                     
             while True:
                 try:
@@ -461,7 +471,8 @@ def main():
                     reply = client.send_message(user_input)
                     # Clear the "Mengetik..." line
                     print(" " * 50, end="\\r")
-                    print(f"\\033[1;32m[AI]:\\033[0m {reply}")
+                    print(f"\\033[1;32m[AI]:\\033[0m\\n{reply}")
+                    print("\\033[1;30m" + "-"*50 + "\\033[0m")
                 except KeyboardInterrupt:
                     break
                 except EOFError:

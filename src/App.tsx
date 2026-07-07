@@ -181,10 +181,31 @@ export default function App() {
     return `curl -sL "${origin}/api/install?accountId=${accountId}&token=${apiToken}&model=${encodeURIComponent(model)}" | bash`;
   };
 
-  const copyInstallCommand = () => {
-    navigator.clipboard.writeText(getInstallCommand());
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+  const copyInstallCommand = async () => {
+    try {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(getInstallCommand());
+      } else {
+        const textArea = document.createElement("textarea");
+        textArea.value = getInstallCommand();
+        textArea.style.position = "absolute";
+        textArea.style.left = "-999999px";
+        document.body.prepend(textArea);
+        textArea.select();
+        try {
+          document.execCommand('copy');
+        } catch (error) {
+          console.error('execCommand Error', error);
+        } finally {
+          textArea.remove();
+        }
+      }
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.error('Failed to copy text: ', err);
+      alert('Gagal menyalin. Silakan salin teks secara manual.');
+    }
   };
 
   const handleTestAPI = async () => {
@@ -538,6 +559,8 @@ export default function App() {
                     transition={{ delay: idx * 0.05 }}
                     onClick={() => {
                       setSelectedUser(user.name);
+                      if (user.accountId) setAccountId(user.accountId);
+                      if (user.token) setApiToken(user.token);
                       setCurrentView('dashboard');
                     }}
                     className={`flex flex-col items-center cursor-pointer group w-full max-w-[240px]`}
@@ -588,6 +611,24 @@ export default function App() {
           
           <div className="p-6 overflow-y-auto flex-1 bg-slate-50/50">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                <div className="md:col-span-3 bg-[#0D1117] rounded-2xl border border-slate-800 shadow-2xl overflow-hidden flex flex-col p-5">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="text-slate-300 font-medium text-sm flex items-center gap-2">
+                      <Terminal size={16} className="text-slate-500" />
+                      Perintah Instalasi Cepat
+                    </div>
+                    <button 
+                      onClick={copyInstallCommand}
+                      className="text-slate-300 bg-slate-800 hover:bg-slate-700 transition-colors px-3 py-1.5 rounded-md text-xs font-medium flex items-center gap-2 border border-slate-700"
+                    >
+                      {copied ? <Check size={14} className="text-green-400" /> : <Copy size={14} />}
+                      {copied ? 'Tersalin' : 'Salin'}
+                    </button>
+                  </div>
+                  <code className="text-xs text-green-400 font-mono break-all bg-black/50 p-3 rounded-lg border border-slate-800/50 select-all">
+                    {getInstallCommand()}
+                  </code>
+                </div>
                 {/* Stats Cards */}
                 <div className="bg-white/90 backdrop-blur-xl p-6 rounded-2xl border border-white/50 shadow-[0_8px_30px_rgb(0,0,0,0.06)] flex items-center gap-5 hover:-translate-y-1 transition-transform duration-300">
                   <div className="bg-green-100 text-green-600 p-3 rounded-lg">
@@ -625,7 +666,7 @@ export default function App() {
                 <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
                   <div className="px-5 py-4 border-b border-slate-200 bg-slate-50 font-medium text-sm flex items-center gap-2">
                     <Brain size={16} className="text-slate-500" />
-                    Sisa Token per Model (Estimasi)
+                    Panel Request ke Model AI
                   </div>
                   <div className="p-5 space-y-4 flex-1 overflow-y-auto">
                     {availableModels.slice(0, 10).map(m => (
@@ -679,29 +720,32 @@ export default function App() {
         </motion.main>
       )}
       {/* Bottom Navigation Bar */}
-      <div className="fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-[400px] bg-white/80 backdrop-blur-xl border border-white/50 p-2 px-4 flex justify-around items-center z-50 shadow-[0_20px_40px_rgb(0,0,0,0.1)] rounded-2xl">
+      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 flex justify-around items-center z-50 shadow-lg px-2 pb-safe pt-2 h-16 sm:h-20">
         <button
           onClick={() => setCurrentView('dashboard')}
-          className={`flex flex-col items-center gap-1 p-2.5 w-16 rounded-xl transition-all duration-300 ${currentView === 'dashboard' ? 'bg-indigo-50 text-indigo-600 scale-105 shadow-sm' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50'}`}
+          className={`flex flex-col items-center justify-center gap-1 w-full h-full transition-colors ${currentView === 'dashboard' ? 'text-indigo-600' : 'text-slate-400 hover:text-slate-600'}`}
         >
-          <LayoutDashboard size={20} />
-          <span className="text-[10px] font-medium uppercase tracking-wider">Dasbor</span>
+          <div className={`absolute top-0 w-12 h-1 rounded-b-full transition-colors ${currentView === 'dashboard' ? 'bg-indigo-600' : 'bg-transparent'}`}></div>
+          <LayoutDashboard size={22} className={`${currentView === 'dashboard' ? 'scale-110' : ''} transition-transform`} />
+          <span className="text-[10px] sm:text-xs font-semibold">Dasbor</span>
         </button>
         
         <button
           onClick={() => setCurrentView('generator')}
-          className={`flex flex-col items-center gap-1 p-2.5 w-20 rounded-xl transition-all duration-300 ${currentView === 'generator' ? 'bg-indigo-50 text-indigo-600 scale-105 shadow-sm' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50'}`}
+          className={`flex flex-col items-center justify-center gap-1 w-full h-full transition-colors ${currentView === 'generator' ? 'text-blue-600' : 'text-slate-400 hover:text-slate-600'}`}
         >
-          <FileText size={20} />
-          <span className="text-[10px] font-medium uppercase tracking-wider">Dokumentasi</span>
+          <div className={`absolute top-0 w-12 h-1 rounded-b-full transition-colors ${currentView === 'generator' ? 'bg-blue-600' : 'bg-transparent'}`}></div>
+          <FileText size={22} className={`${currentView === 'generator' ? 'scale-110' : ''} transition-transform`} />
+          <span className="text-[10px] sm:text-xs font-semibold">Konfigurasi</span>
         </button>
         
         <button
           onClick={() => setCurrentView('user_select')}
-          className={`flex flex-col items-center gap-1 p-2.5 w-20 rounded-xl transition-all duration-300 ${currentView === 'user_select' ? 'bg-purple-50 text-purple-600 scale-105 shadow-sm' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50'}`}
+          className={`flex flex-col items-center justify-center gap-1 w-full h-full transition-colors ${currentView === 'user_select' ? 'text-emerald-600' : 'text-slate-400 hover:text-slate-600'}`}
         >
-          <Users size={20} />
-          <span className="text-[10px] font-medium uppercase tracking-wider">List User</span>
+          <div className={`absolute top-0 w-12 h-1 rounded-b-full transition-colors ${currentView === 'user_select' ? 'bg-emerald-600' : 'bg-transparent'}`}></div>
+          <Users size={22} className={`${currentView === 'user_select' ? 'scale-110' : ''} transition-transform`} />
+          <span className="text-[10px] sm:text-xs font-semibold">Pengguna</span>
         </button>
       </div>
     </div>
