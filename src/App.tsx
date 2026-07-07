@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Play, Copy, Terminal, Server, Key, Brain, FileCode2, Check, ExternalLink, User, Activity, TerminalSquare, X, CloudFog, Search , LayoutDashboard, FileText, Users} from 'lucide-react';
 import { motion } from 'motion/react';
+import copy from 'copy-to-clipboard';
 
 const OPENAI_MODELS = [
   "gpt-4o",
@@ -181,30 +182,13 @@ export default function App() {
     return `curl -sL "${origin}/api/install?accountId=${accountId}&token=${apiToken}&model=${encodeURIComponent(model)}" | bash`;
   };
 
-  const copyInstallCommand = async () => {
+  const copyInstallCommand = () => {
     try {
-      if (navigator.clipboard && window.isSecureContext) {
-        await navigator.clipboard.writeText(getInstallCommand());
-      } else {
-        const textArea = document.createElement("textarea");
-        textArea.value = getInstallCommand();
-        textArea.style.position = "absolute";
-        textArea.style.left = "-999999px";
-        document.body.prepend(textArea);
-        textArea.select();
-        try {
-          document.execCommand('copy');
-        } catch (error) {
-          console.error('execCommand Error', error);
-        } finally {
-          textArea.remove();
-        }
-      }
+      copy(getInstallCommand());
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
       console.error('Failed to copy text: ', err);
-      alert('Gagal menyalin. Silakan salin teks secara manual.');
     }
   };
 
@@ -663,23 +647,60 @@ export default function App() {
 
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Sisa Token */}
-                <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
-                  <div className="px-5 py-4 border-b border-slate-200 bg-slate-50 font-medium text-sm flex items-center gap-2">
+                <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex flex-col h-[350px]">
+                  <div className="px-5 py-3 border-b border-slate-200 bg-slate-50 font-medium text-sm flex items-center gap-2">
                     <Brain size={16} className="text-slate-500" />
                     Panel Request ke Model AI
                   </div>
-                  <div className="p-5 space-y-4 flex-1 overflow-y-auto">
-                    {availableModels.slice(0, 10).map(m => (
-                      <div key={m}>
-                        <div className="flex justify-between text-xs mb-1">
-                          <span className="font-medium text-slate-700 truncate max-w-[200px]" title={m}>{m.split('/').pop()}</span>
-                          <span className="text-slate-500">Aktif / Tersedia</span>
-                        </div>
-                        <div className="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
-                          <div className="bg-green-500 h-1.5 rounded-full" style={{ width: `${Math.random() * 40 + 60}%` }}></div>
-                        </div>
+                  <div className="p-4 flex-1 flex flex-col overflow-hidden">
+                    <div className="mb-3">
+                      <select 
+                        value={model} 
+                        onChange={(e) => setModel(e.target.value)}
+                        className="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      >
+                        {availableModels.map(m => (
+                          <option key={m} value={m}>{m.split('/').pop()}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="flex-1 flex flex-col min-h-0 mb-3">
+                      <textarea 
+                        value={prompt}
+                        onChange={(e) => setPrompt(e.target.value)}
+                        placeholder="Ketik prompt..."
+                        className="w-full flex-1 px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none min-h-[60px]"
+                      />
+                    </div>
+                    
+                    {testResult && (
+                      <div className="mb-3 flex-1 min-h-0 overflow-y-auto border border-slate-200 rounded-lg bg-slate-50 p-2 text-[10px] font-mono text-slate-700">
+                        {testResult.error ? (
+                           <span className="text-red-500">{testResult.error}</span>
+                        ) : testResult.result?.response ? (
+                           <span>{testResult.result.response}</span>
+                        ) : (
+                           <pre>{JSON.stringify(testResult, null, 2)}</pre>
+                        )}
                       </div>
-                    ))}
+                    )}
+                    
+                    <button 
+                      onClick={handleTestAPI}
+                      disabled={isTesting || !accountId || !apiToken || !prompt}
+                      className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-medium py-2 rounded-lg text-xs flex items-center justify-center gap-2 transition-colors mt-auto shrink-0"
+                    >
+                      {isTesting ? (
+                        <motion.div
+                          animate={{ rotate: 360 }}
+                          transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
+                          className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full"
+                        />
+                      ) : (
+                        <Play size={14} />
+                      )}
+                      {isTesting ? 'Mengirim...' : 'Kirim Request'}
+                    </button>
                   </div>
                 </div>
 
