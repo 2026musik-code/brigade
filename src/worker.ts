@@ -78,6 +78,50 @@ app.post('/api/users', async (c) => {
   }
 });
 
+// Verify Token
+app.get('/api/verify-token', async (c) => {
+  const token = c.req.header('Authorization') || c.req.query('token');
+  if (!token) return c.json({ error: 'Missing token' }, 400);
+
+  const cleanToken = token.replace('Bearer ', '');
+  try {
+    const response = await fetch('https://api.cloudflare.com/client/v4/user/tokens/verify', {
+      headers: {
+        'Authorization': `Bearer ${cleanToken}`,
+        'Content-Type': 'application/json'
+      }
+    });
+    const data = await response.json();
+    return c.json(data, response.status as any);
+  } catch (error: any) {
+    return c.json({ error: error.message }, 500);
+  }
+});
+
+// Fetch Models
+app.get('/api/models', async (c) => {
+  const accountId = c.req.query('accountId');
+  const token = c.req.header('Authorization') || c.req.query('token');
+  
+  if (!accountId || !token) {
+    return c.json({ error: 'Missing accountId or token' }, 400);
+  }
+
+  const cleanToken = token.replace('Bearer ', '');
+  try {
+    const response = await fetch(`https://api.cloudflare.com/client/v4/accounts/${accountId}/ai/models/search`, {
+      headers: {
+        'Authorization': `Bearer ${cleanToken}`,
+        'Content-Type': 'application/json'
+      }
+    });
+    const data = await response.json();
+    return c.json(data, response.status as any);
+  } catch (error: any) {
+    return c.json({ error: error.message }, 500);
+  }
+});
+
 // Get Logs for Dashboard
 app.get('/api/logs', async (c) => {
   if (!c.env.userkey) return c.json([]);
@@ -169,28 +213,110 @@ app.post('/api/cloudflare/:model{.*}', async (c) => {
   }
 });
 
-// Endpoint untuk Generate Script Instalasi
-app.get('/api/install', (c) => {
-  const accountId = c.req.query('accountId');
-  const token = c.req.query('token');
-  const model = c.req.query('model') || "@cf/meta/llama-3.1-8b-instruct";
-  
-  if (!accountId || !token) {
-    return c.text("echo 'Error: Missing accountId or token in URL'", 400);
-  }
+  // API route to proxy OpenAI compatible API requests
+  app.post("/api/openai/chat/completions", async (c) => {
+    const accountId = c.req.header('x-cf-account-id') || c.req.query('accountId');
+    const token = c.req.header('x-cf-api-token') || c.req.query('token');
+    let body: any = {};
+    try {
+      body = await c.req.json();
+    } catch (e) {
+      return c.json({ error: 'Invalid JSON payload' }, 400);
+    }
+    
+    const finalAccountId = accountId || body.accountId;
+    const finalToken = token || body.token;
+    const model = body.model;
+    
+    if (!finalAccountId || !finalToken || !model) {
+      return c.json({ error: 'Missing required fields (accountId, token, model)' }, 400);
+    }
 
-  // Karena ini berjalan di Cloudflare Worker, host adalah URL Worker ini sendiri
-  const appUrl = new URL(c.req.url).origin;
+    // Pass through the exact same body but remove our custom fields
+    const bodyPayload = { ...body };
+    delete bodyPayload.accountId;
+    delete bodyPayload.token;
 
-  const pythonScript = \`import requests
+    const startTime = Date.now();
+    try {
+      const response = await fetch(`https://api.cloudflare.com/client/v4/accounts/${finalAccountId}/ai/v1/chat/completions`, {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${finalToken}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(bodyPayload)
+      });
+      
+      const data = await response.json();
+      const latency = Date.now() - startTime;
+      
+      if (c.env.userkey && c.executionCtx) {
+        const userAgent = c.req.header('user-agent') || '';
+        const source = userAgent.includes('python-requests') || userAgent.includes('curl') ? 'VPS/Termux (OpenAI API)' : 'Web UI (OpenAI API)';
+        
+        c.executionCtx.waitUntil(saveLog(c.env.userkey, {
+          time: new Date().toLocaleTimeString(),
+          model,
+          prompt: body.messages?.[0]?.content || 'OpenAI Payload',
+          latency,
+          status: response.status,
+          source
+        }));
+      }
+      return c.json(data, response.status as any);
+    } catch (error: any) {
+      const latency = Date.now() - startTime;
+      if (c.env.userkey && c.executionCtx) {
+        const userAgent = c.req.header('user-agent') || '';
+        const source = userAgent.includes('python-requests') || userAgent.includes('curl') ? 'VPS/Termux (OpenAI API)' : 'Web UI (OpenAI API)';
+        
+        c.executionCtx.waitUntil(saveLog(c.env.userkey, {
+          time: new Date().toLocaleTimeString(),
+          model,
+          prompt: body.messages?.[0]?.content || 'OpenAI Payload',
+          latency,
+          status: 500,
+          source
+        }));
+      }
+      return c.json({ error: error.message }, 500);
+    }
+  });
+
+  // Endpoint untuk Generate Script Instalasi
+app.get("/api/install", (req) => {
+    const res = undefined;
+    // Determine if it's hono (c) or express (req, res)
+    const isHono = typeof res === 'undefined';
+    const c = isHono ? req : null;
+    
+    const query = isHono ? (key) => c.req.query(key) : (key) => req.query[key];
+    const header = isHono ? (key) => c.req.header(key) : (key) => req.headers[key.toLowerCase()];
+    const urlOrigin = isHono ? new URL(c.req.url).origin : `${req.headers['x-forwarded-proto'] || req.protocol}://${req.headers['x-forwarded-host'] || req.get('host')}`;
+    
+    const provider = query('provider') || 'cloudflare';
+    
+    let pythonScript = '';
+    
+    if (provider === 'cloudflare') {
+      const accountId = query('accountId');
+      const token = query('token');
+      const model = query('model') || "@cf/meta/llama-3.1-8b-instruct";
+      
+      if (!accountId || !token) {
+        if (isHono) return c.text("echo 'Error: Missing accountId or token in URL'", 400);
+        return res.status(400).send("echo 'Error: Missing accountId or token in URL'");
+      }
+      
+      pythonScript = `import requests
 from typing import Optional, Dict, Any
 
 class CloudflareAI:
     def __init__(self, account_id: str, api_token: str):
         self.account_id = account_id
         self.api_token = api_token
-        # Menembak ke Worker API kita sendiri
-        self.base_url = f"\${appUrl}/api/cloudflare/"
+        self.base_url = f"${urlOrigin}/api/cloudflare/"
         self.headers = {
             "X-CF-Account-ID": account_id,
             "X-CF-API-Token": api_token,
@@ -212,36 +338,89 @@ class CloudflareAI:
         return None
 
 if __name__ == "__main__":
-    ACCOUNT_ID = "\${accountId}"
-    API_TOKEN = "\${token}"
-    MODEL = "\${model}"
+    ACCOUNT_ID = "${accountId}"
+    API_TOKEN = "${token}"
+    MODEL = "${model}"
     
     ai_client = CloudflareAI(account_id=ACCOUNT_ID, api_token=API_TOKEN)
     
-    print(f"[*] Mengirim permintaan melalui API Worker (\${appUrl})...")
+    print(f"[*] Mengirim permintaan melalui API Gateway (${urlOrigin})...")
     hasil = ai_client.run_model(model=MODEL, prompt="Sapa saya dalam satu kalimat bahasa Indonesia.")
     
     if hasil and 'result' in hasil:
-        print("\\\\n[+] Response AI:\\\\n")
+        print("\\n[+] Response AI:\\n")
         res_data = hasil['result']
         if isinstance(res_data, dict) and 'response' in res_data:
             print(res_data['response'])
         else:
             print(res_data)
     else:
-        print("\\\\n[-] Gagal mendapatkan respons.")\`;
+        print("\\n[-] Gagal mendapatkan respons.")`;
+    } else {
+      const token = query('token');
+      const baseUrl = query('baseUrl') || 'https://api.openai.com/v1';
+      const model = query('model') || 'gpt-4o';
+      
+      if (!token) {
+        if (isHono) return c.text("echo 'Error: Missing token in URL'", 400);
+        return res.status(400).send("echo 'Error: Missing token in URL'");
+      }
+      
+      pythonScript = `import requests
+from typing import Optional, Dict, Any
 
-  const bashScript = \`#!/bin/bash
-echo -e "\\\\e[1;36m[*] Menyiapkan environment CFAI API (Hono Worker)...\\\\e[0m"
+class OpenAIClient:
+    def __init__(self, api_key: str, base_url: str = "https://api.openai.com/v1"):
+        self.api_key = api_key
+        self.base_url = base_url.rstrip('/')
+        self.headers = {
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json"
+        }
+
+    def run_model(self, model: str, prompt: str, max_tokens: int = 256) -> Optional[Dict[str, Any]]:
+        url = f"{self.base_url}/chat/completions"
+        payload = {
+            "model": model,
+            "messages": [{"role": "user", "content": prompt}],
+            "max_tokens": max_tokens
+        }
+        try:
+            response = requests.post(url, headers=self.headers, json=payload, timeout=30)
+            response.raise_for_status()
+            return response.json()
+        except Exception as err:
+            print(f"[-] Error: {err}")
+        return None
+
+if __name__ == "__main__":
+    API_KEY = "${token}"
+    BASE_URL = "${baseUrl}"
+    MODEL = "${model}"
+    
+    ai_client = OpenAIClient(api_key=API_KEY, base_url=BASE_URL)
+    
+    print(f"[*] Mengirim permintaan ke OpenAI Compatible Endpoint (${BASE_URL})...")
+    hasil = ai_client.run_model(model=MODEL, prompt="Sapa saya dalam satu kalimat bahasa Indonesia.")
+    
+    if hasil and 'choices' in hasil and len(hasil['choices']) > 0:
+        print("\\n[+] Response AI:\\n")
+        print(hasil['choices'][0]['message']['content'])
+    else:
+        print("\\n[-] Gagal mendapatkan respons. Raw output:", hasil)`;
+    }
+    
+    const bashScript = `#!/bin/bash
+echo -e "\\e[1;36m[*] Menyiapkan environment API...\\e[0m"
 
 # Deteksi Termux vs VPS Linux
 if [ -n "$PREFIX" ] && [ -d "$PREFIX/usr/bin" ]; then
-    echo -e "\\\\e[1;34m[*] Lingkungan Termux terdeteksi.\\\\e[0m"
+    echo -e "\\e[1;34m[*] Lingkungan Termux terdeteksi.\\e[0m"
     pkg update -y
     pkg install -y python python-pip
     pip install requests
 else
-    echo -e "\\\\e[1;34m[*] Lingkungan Linux/VPS terdeteksi.\\\\e[0m"
+    echo -e "\\e[1;34m[*] Lingkungan Linux/VPS terdeteksi.\\e[0m"
     if command -v apt-get >/dev/null; then
         sudo apt-get update
         sudo apt-get install -y python3 python3-pip
@@ -250,25 +429,25 @@ else
     elif command -v pacman >/dev/null; then
         sudo pacman -Sy --noconfirm python python-pip
     else
-        echo -e "\\\\e[1;33m[!] Package manager tidak terdeteksi otomatis, pastikan Python3 terinstall.\\\\e[0m"
+        echo -e "\\e[1;33m[!] Package manager tidak terdeteksi otomatis, pastikan Python3 terinstall.\\e[0m"
     fi
     pip3 install requests --break-system-packages 2>/dev/null || pip3 install requests
 fi
 
-echo -e "\\\\e[1;36m[*] Membuat file cloudflare_ai.py...\\\\e[0m"
-cat << 'EOF' > cloudflare_ai.py
-\${pythonScript}
-EOF
+echo -e "\\e[1;36m[*] Membuat file test_ai.py...\\e[0m"
+cat << 'INNER_EOF' > test_ai.py
+${pythonScript}
+INNER_EOF
 
-echo -e "\\\\e[1;32m[+] Selesai! Menjalankan uji coba skrip...\\\\e[0m"
+echo -e "\\e[1;32m[+] Selesai! Menjalankan uji coba skrip...\\e[0m"
 if command -v python3 >/dev/null; then
-    python3 cloudflare_ai.py
+    python3 test_ai.py
 else
-    python cloudflare_ai.py
-fi
-\`;
+    python test_ai.py
+fi`;
 
-  return c.text(bashScript);
-});
+    if (isHono) return c.text(bashScript);
+    res.setHeader('Content-Type', 'text/plain');
+    res.send(bashScript);});
 
 export default app;

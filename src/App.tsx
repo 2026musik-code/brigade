@@ -2,38 +2,62 @@ import React, { useState } from 'react';
 import { Play, Copy, Terminal, Server, Key, Brain, FileCode2, Check, ExternalLink, User, Activity, TerminalSquare, X, CloudFog, Search } from 'lucide-react';
 import { motion } from 'motion/react';
 
+const OPENAI_MODELS = [
+  "gpt-4o",
+  "gpt-4o-mini",
+  "gpt-4-turbo",
+  "gpt-3.5-turbo",
+  "o1-preview",
+  "o1-mini",
+  "claude-3-5-sonnet-20241022",
+  "deepseek-chat",
+  "deepseek-reasoner",
+  "openai/gpt-5.5"
+];
+
 const MODELS = [
-  // Llama Series
-  "@cf/meta/llama-3.1-8b-instruct",
-  "@cf/meta/llama-3-8b-instruct",
-  "@cf/meta/llama-2-7b-chat-int8",
-  "@cf/meta/llama-2-7b-chat-fp16",
-  "@hf/thebloke/llama-2-13b-chat-awq",
-  // Mistral & Hermes
-  "@cf/mistral/mistral-7b-instruct-v0.1",
-  "@hf/thebloke/mistral-7b-instruct-v0.1-awq",
-  "@hf/thebloke/openhermes-2.5-mistral-7b-awq",
-  // Qwen
-  "@cf/qwen/qwen1.5-14b-chat-awq",
-  "@cf/qwen/qwen1.5-7b-chat-awq",
-  "@cf/qwen/qwen1.5-1.8b-chat",
+  // Llama Series (Latest)
+  "@cf/meta/llama-4-scout-17b-16e-instruct",
+  "@cf/meta/llama-3.3-70b-instruct-fp8-fast",
+  "@cf/meta/llama-3.2-11b-vision-instruct",
+  "@cf/meta/llama-3.2-3b-instruct",
+  "@cf/meta/llama-3.2-1b-instruct",
+  "@cf/meta/llama-3.1-8b-instruct-fp8",
+  "@cf/meta/llama-guard-3-8b",
+  // OpenAI Open-Weight Series
+  "@cf/openai/gpt-oss-120b",
+  "@cf/openai/gpt-oss-20b",
   // DeepSeek
+  "@cf/deepseek-ai/deepseek-r1-distill-qwen-32b",
   "@cf/deepseek-ai/deepseek-math-7b-instruct",
   "@cf/deepseek-ai/deepseek-coder-6.7b-instruct",
-  "@cf/deepseek-ai/deepseek-coder-6.7b-base",
-  // Google
-  "@cf/google/gemma-7b-it",
+  // Qwen (Latest)
+  "@cf/qwen/qwq-32b",
+  "@cf/qwen/qwen3-30b-a3b-fp8",
+  "@cf/qwen/qwen2.5-coder-32b-instruct",
+  // Google Gemma
+  "@cf/google/gemma-4-26b-a4b-it",
+  "@cf/google/gemma-7b-it-lora",
   "@cf/google/gemma-2b-it-lora",
+  // Mistral
+  "@cf/mistralai/mistral-small-3.1-24b-instruct",
+  "@cf/mistral/mistral-7b-instruct-v0.2-lora",
   // Others
-  "@cf/microsoft/phi-2",
-  "@cf/tinyllama/tinyllama-1.1b-chat-v1.0",
-  "@hf/thebloke/zephyr-7b-beta-awq",
-  "@hf/thebloke/neural-chat-7b-v3-1-awq"
+  "@cf/moonshotai/kimi-k2.7-code",
+  "@cf/zai-org/glm-5.2",
+  "@cf/nvidia/nemotron-3-120b-a12b",
+  "@cf/ibm-granite/granite-4.0-h-micro"
 ];
 
 export default function App() {
+    const [apiProvider, setApiProvider] = useState<'cloudflare' | 'openai'>('cloudflare');
+  const [openaiKey, setOpenaiKey] = useState("");
+  const [openaiBaseUrl, setOpenaiBaseUrl] = useState("https://api.openai.com/v1");
+  const [openaiModel, setOpenaiModel] = useState(OPENAI_MODELS[0]);
+  const [customOpenaiModel, setCustomOpenaiModel] = useState("");
   const [accountId, setAccountId] = useState("");
   const [apiToken, setApiToken] = useState("");
+  const [availableModels, setAvailableModels] = useState(MODELS);
   const [model, setModel] = useState(MODELS[0]);
   const [prompt, setPrompt] = useState("Sapa saya dalam satu kalimat bahasa Indonesia.");
   
@@ -41,6 +65,9 @@ export default function App() {
   const [testResult, setTestResult] = useState<any>(null);
   const [copied, setCopied] = useState(false);
   const [isLinkGenerated, setIsLinkGenerated] = useState(false);
+  const [tokenStatus, setTokenStatus] = useState<'idle'|'verifying'|'valid'|'invalid'>('idle');
+  const [tokenError, setTokenError] = useState<string|null>(null);
+  const [isFetchingModels, setIsFetchingModels] = useState(false);
 
   // Server Stats State
   const [currentView, setCurrentView] = useState<'generator' | 'user_select' | 'dashboard'>('generator');
@@ -81,6 +108,56 @@ export default function App() {
       alert('Gagal menyimpan profil');
     } finally {
       setIsSavingUser(false);
+    }
+  };
+
+  const handleVerifyToken = async () => {
+    if (!apiToken) return;
+    setTokenStatus('verifying');
+    setTokenError(null);
+    try {
+      const response = await fetch('/api/verify-token', {
+        headers: { 'Authorization': `Bearer ${apiToken}` }
+      });
+      const data = await response.json();
+      if (response.ok && data.success && data.result.status === 'active') {
+        setTokenStatus('valid');
+      } else {
+        setTokenStatus('invalid');
+        setTokenError(data.errors?.[0]?.message || 'Token tidak valid');
+      }
+    } catch (err: any) {
+      setTokenStatus('invalid');
+      setTokenError(err.message);
+    }
+  };
+
+  const handleFetchModels = async () => {
+    if (!accountId || !apiToken) return;
+    setIsFetchingModels(true);
+    try {
+      const response = await fetch(`/api/models?accountId=${accountId}`, {
+        headers: { 'Authorization': `Bearer ${apiToken}` }
+      });
+      const data = await response.json();
+      if (response.ok && data.success) {
+        const textModels = data.result
+          .filter((m: any) => m.task.name === "Text Generation")
+          .map((m: any) => m.name);
+        if (textModels.length > 0) {
+          setAvailableModels(textModels);
+          setModel(textModels[0]);
+          alert(`Berhasil memuat ${textModels.length} model Text Generation!`);
+        } else {
+          alert('Tidak ada model Text Generation yang ditemukan.');
+        }
+      } else {
+        alert(data.errors?.[0]?.message || 'Gagal memuat model');
+      }
+    } catch (err: any) {
+      alert('Error memuat model: ' + err.message);
+    } finally {
+      setIsFetchingModels(false);
     }
   };
 
@@ -221,11 +298,27 @@ export default function App() {
                   <input 
                     type="password" 
                     value={apiToken}
-                    onChange={(e) => setApiToken(e.target.value)}
+                    onChange={(e) => {
+                      setApiToken(e.target.value);
+                      setTokenStatus('idle');
+                      setTokenError(null);
+                    }}
                     className="w-full pl-9 pr-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-colors"
                   />
                   <Key size={16} className="absolute left-3 top-2.5 text-gray-400" />
                 </div>
+                <div className="mt-2 flex items-center justify-between">
+                  <button 
+                    onClick={handleVerifyToken}
+                    disabled={!apiToken || tokenStatus === 'verifying'}
+                    className="text-xs font-medium text-blue-600 hover:text-blue-700 disabled:text-gray-400 flex items-center gap-1"
+                  >
+                    {tokenStatus === 'verifying' ? 'Memverifikasi...' : 'Verifikasi Token'}
+                  </button>
+                  {tokenStatus === 'valid' && <span className="text-xs font-medium text-green-600 flex items-center gap-1"><Check size={14}/> Valid</span>}
+                  {tokenStatus === 'invalid' && <span className="text-xs font-medium text-red-600 flex items-center gap-1"><X size={14}/> Tidak Valid</span>}
+                </div>
+                {tokenError && <p className="text-xs text-red-500 mt-1">{tokenError}</p>}
               </div>
               
               <div className="pt-2 border-t border-gray-100">
@@ -258,13 +351,22 @@ export default function App() {
             
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Model AI</label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-sm font-medium text-gray-700">Model AI</label>
+                  <button
+                    onClick={handleFetchModels}
+                    disabled={isFetchingModels || !accountId || !apiToken}
+                    className="text-xs font-medium text-blue-600 hover:text-blue-700 disabled:text-gray-400 flex items-center gap-1"
+                  >
+                    {isFetchingModels ? 'Memuat...' : 'Muat dari API'}
+                  </button>
+                </div>
                 <select 
                   value={model}
                   onChange={(e) => setModel(e.target.value)}
                   className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-colors"
                 >
-                  {MODELS.map(m => (
+                  {availableModels.map(m => (
                     <option key={m} value={m}>{m}</option>
                   ))}
                 </select>
@@ -518,7 +620,7 @@ export default function App() {
                     Sisa Token per Model (Estimasi)
                   </div>
                   <div className="p-5 space-y-4 flex-1 overflow-y-auto">
-                    {MODELS.map(m => (
+                    {availableModels.slice(0, 10).map(m => (
                       <div key={m}>
                         <div className="flex justify-between text-xs mb-1">
                           <span className="font-medium text-gray-700 truncate max-w-[200px]" title={m}>{m.split('/').pop()}</span>
