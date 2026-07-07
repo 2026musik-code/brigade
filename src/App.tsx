@@ -243,18 +243,18 @@ export default function App() {
   }, [currentView]);
 
   return (
-    <div className="min-h-screen bg-gray-50 text-gray-900 font-sans pb-20">
-      <header className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between sticky top-0 z-10">
+    <div className="min-h-screen bg-slate-50 text-slate-800 font-sans pb-24 selection:bg-indigo-100 selection:text-indigo-900" style={{ backgroundImage: "radial-gradient(at 0% 0%, hsla(253,16%,7deg,0.03) 0, transparent 50%), radial-gradient(at 50% 0%, hsla(225,39%,30deg,0.03) 0, transparent 50%), radial-gradient(at 100% 0%, hsla(339,49%,30deg,0.03) 0, transparent 50%)" }}>
+      <header className="bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between sticky top-0 z-10">
         <div className="flex items-center gap-3">
-          <div className="bg-orange-500 text-white p-2 rounded-lg">
+          <div className="bg-gradient-to-br from-indigo-500 to-purple-600 text-white p-2 rounded-xl shadow-lg shadow-indigo-500/30">
             <Terminal size={20} />
           </div>
           <div className="flex items-center gap-2">
             <h1 className="font-bold text-xl tracking-tight">CFAI</h1>
             {currentView === 'user_select' && (
               <>
-                <span className="text-gray-300 hidden sm:block">/</span>
-                <span className="font-semibold text-lg tracking-tight text-gray-900 hidden sm:block">DASBOR USER</span>
+                <span className="text-slate-300 hidden sm:block">/</span>
+                <span className="font-semibold text-lg tracking-tight text-slate-900 hidden sm:block">DASBOR USER</span>
               </>
             )}
           </div>
@@ -265,7 +265,7 @@ export default function App() {
             href="https://wa.me/627733745059" 
             target="_blank" 
             rel="noopener noreferrer" 
-            className="flex items-center gap-2 hover:bg-green-50 text-green-600 p-2 rounded-lg transition-colors border border-green-200 shadow-sm"
+            className="flex items-center gap-2 hover:bg-green-50 text-green-600 p-2.5 rounded-xl transition-all duration-300 border border-green-200 shadow-sm hover:shadow hover:scale-105"
           >
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
               <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.086 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
@@ -277,31 +277,31 @@ export default function App() {
 
 
       {currentView === 'generator' ? (
-        <main className="max-w-7xl mx-auto p-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <motion.main initial={{opacity:0, y:20}} animate={{opacity:1, y:0}} transition={{duration:0.4}} className="max-w-7xl mx-auto p-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Kontrol Kiri */}
         <div className="lg:col-span-4 flex flex-col gap-6">
-          <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
-            <h2 className="text-sm font-semibold text-gray-900 mb-4 flex items-center gap-2 uppercase tracking-wider">
-              <Server size={16} className="text-gray-400" />
+          <div className="bg-white/80 backdrop-blur-lg rounded-2xl border border-white/50 p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] transition-all duration-300">
+            <h2 className="text-sm font-semibold text-slate-900 mb-4 flex items-center gap-2 uppercase tracking-wider">
+              <Server size={16} className="text-slate-400" />
               Konfigurasi API
             </h2>
             
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Account ID</label>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Account ID</label>
                 <div className="relative">
                   <input 
                     type="text" 
                     value={accountId}
                     onChange={(e) => setAccountId(e.target.value)}
-                    className="w-full pl-9 pr-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-colors"
+                    className="w-full pl-10 pr-4 py-2.5 bg-slate-50/50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 transition-all duration-300 shadow-inner"
                   />
-                  <Server size={16} className="absolute left-3 top-2.5 text-gray-400" />
+                  <Server size={16} className="absolute left-3 top-2.5 text-slate-400" />
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">API Token</label>
+                <label className="block text-sm font-medium text-slate-700 mb-1">API Token</label>
                 <div className="relative">
                   <input 
                     type="password" 
@@ -311,15 +311,15 @@ export default function App() {
                       setTokenStatus('idle');
                       setTokenError(null);
                     }}
-                    className="w-full pl-9 pr-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-colors"
+                    className="w-full pl-10 pr-4 py-2.5 bg-slate-50/50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 transition-all duration-300 shadow-inner"
                   />
-                  <Key size={16} className="absolute left-3 top-2.5 text-gray-400" />
+                  <Key size={16} className="absolute left-3 top-2.5 text-slate-400" />
                 </div>
                 <div className="mt-2 flex items-center justify-between">
                   <button 
                     onClick={handleVerifyToken}
                     disabled={!apiToken || tokenStatus === 'verifying'}
-                    className="text-xs font-medium text-blue-600 hover:text-blue-700 disabled:text-gray-400 flex items-center gap-1"
+                    className="text-xs font-medium text-blue-600 hover:text-blue-700 disabled:text-slate-400 flex items-center gap-1"
                   >
                     {tokenStatus === 'verifying' ? 'Memverifikasi...' : 'Verifikasi Token'}
                   </button>
@@ -329,20 +329,20 @@ export default function App() {
                 {tokenError && <p className="text-xs text-red-500 mt-1">{tokenError}</p>}
               </div>
               
-              <div className="pt-2 border-t border-gray-100">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Nama Profil (Opsional untuk simpan ke KV)</label>
+              <div className="pt-2 border-t border-slate-100">
+                <label className="block text-sm font-medium text-slate-700 mb-2">Nama Profil (Opsional untuk simpan ke KV)</label>
                 <div className="flex flex-col sm:flex-row gap-2 sm:items-stretch">
                   <input 
                     type="text"
                     placeholder="Contoh: Budi Cloudflare"
                     value={newUserName}
                     onChange={(e) => setNewUserName(e.target.value)}
-                    className="flex-1 w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-colors"
+                    className="flex-1 w-full px-4 py-2.5 bg-slate-50/50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 transition-all duration-300 shadow-inner transition-colors"
                   />
                   <button
                     onClick={handleSaveUser}
                     disabled={isSavingUser || !newUserName || !accountId || !apiToken}
-                    className="bg-gray-900 text-white hover:bg-gray-800 disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed px-5 py-2.5 rounded-lg text-sm font-medium transition-colors border border-transparent shadow-sm whitespace-nowrap flex items-center justify-center"
+                    className="bg-slate-900 text-white hover:bg-slate-800 disabled:bg-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed px-6 py-3 rounded-xl shadow-md hover:shadow-lg text-sm font-medium transition-colors border border-transparent shadow-sm whitespace-nowrap flex items-center justify-center"
                   >
                     {isSavingUser ? 'Menyimpan...' : 'Simpan Profil'}
                   </button>
@@ -351,20 +351,20 @@ export default function App() {
             </div>
           </div>
 
-          <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
-            <h2 className="text-sm font-semibold text-gray-900 mb-4 flex items-center gap-2 uppercase tracking-wider">
-              <Brain size={16} className="text-gray-400" />
+          <div className="bg-white/80 backdrop-blur-lg rounded-2xl border border-white/50 p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] transition-all duration-300">
+            <h2 className="text-sm font-semibold text-slate-900 mb-4 flex items-center gap-2 uppercase tracking-wider">
+              <Brain size={16} className="text-slate-400" />
               Parameter Model
             </h2>
             
             <div className="space-y-4">
               <div>
                 <div className="flex items-center justify-between mb-1">
-                  <label className="block text-sm font-medium text-gray-700">Model AI</label>
+                  <label className="block text-sm font-medium text-slate-700">Model AI</label>
                   <button
                     onClick={handleFetchModels}
                     disabled={isFetchingModels || !accountId || !apiToken}
-                    className="text-xs font-medium text-blue-600 hover:text-blue-700 disabled:text-gray-400 flex items-center gap-1"
+                    className="text-xs font-medium text-blue-600 hover:text-blue-700 disabled:text-slate-400 flex items-center gap-1"
                   >
                     {isFetchingModels ? 'Memuat...' : 'Muat dari API'}
                   </button>
@@ -372,7 +372,7 @@ export default function App() {
                 <select 
                   value={model}
                   onChange={(e) => setModel(e.target.value)}
-                  className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-colors"
+                  className="w-full px-4 py-2.5 bg-slate-50/50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 transition-all duration-300 shadow-inner transition-colors"
                 >
                   {availableModels.map(m => (
                     <option key={m} value={m}>{m}</option>
@@ -381,19 +381,19 @@ export default function App() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Prompt</label>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Prompt</label>
                 <textarea 
                   value={prompt}
                   onChange={(e) => setPrompt(e.target.value)}
                   rows={4}
-                  className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-colors resize-none"
+                  className="w-full px-4 py-2.5 bg-slate-50/50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 transition-all duration-300 shadow-inner transition-colors resize-none"
                 />
               </div>
 
               <button 
                 onClick={handleTestAPI}
                 disabled={isTesting || !accountId || !apiToken || !prompt}
-                className="w-full bg-gray-900 hover:bg-gray-800 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-medium py-2.5 rounded-lg text-sm flex items-center justify-center gap-2 transition-colors"
+                className="w-full bg-slate-900 hover:bg-slate-800 disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-medium py-2.5 rounded-lg text-sm flex items-center justify-center gap-2 transition-colors"
               >
                 {isTesting ? (
                   <motion.div
@@ -418,35 +418,35 @@ export default function App() {
             <motion.div 
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm flex flex-col"
+              className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm flex flex-col"
             >
-              <div className="bg-gray-50 border-b border-gray-200 px-4 py-3 flex items-center justify-between">
-                <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
+              <div className="bg-slate-50 border-b border-slate-200 px-4 py-3 flex items-center justify-between">
+                <div className="flex items-center gap-2 text-sm font-medium text-slate-700">
                   <div className={`w-2 h-2 rounded-full ${testResult.success !== false && !testResult.error ? 'bg-green-500' : 'bg-red-500'}`} />
                   Hasil Pengujian API
                 </div>
               </div>
-              <div className="p-4 bg-gray-900 text-gray-300 font-mono text-sm overflow-x-auto max-h-[250px] overflow-y-auto">
+              <div className="p-4 bg-slate-900 text-slate-300 font-mono text-sm overflow-x-auto max-h-[250px] overflow-y-auto">
                 <pre>{JSON.stringify(testResult, null, 2)}</pre>
               </div>
             </motion.div>
           )}
 
           {/* Code Viewer / Terminal Config */}
-          <div className="bg-gray-900 rounded-xl overflow-hidden shadow-sm flex-1 flex flex-col border border-gray-800">
-            <div className="flex border-b border-gray-800 bg-gray-950">
-              <div className="px-4 py-3 text-sm font-medium flex items-center gap-2 text-white border-b-2 border-orange-500 bg-gray-900/50">
+          <div className="bg-slate-900 rounded-xl overflow-hidden shadow-sm flex-1 flex flex-col border border-slate-800">
+            <div className="flex border-b border-slate-800 bg-slate-950">
+              <div className="px-4 py-3 text-sm font-medium flex items-center gap-2 text-white border-b-2 border-indigo-500 bg-slate-900/50">
                 <Terminal size={16} />
                 Instalasi Terminal (VPS/Termux)
               </div>
             </div>
 
             <div className="flex-1 flex flex-col p-6 items-center justify-center text-center">
-              <div className="w-16 h-16 bg-gray-800 rounded-2xl flex items-center justify-center mb-6 border border-gray-700">
-                <Terminal size={32} className="text-orange-400" />
+              <div className="w-16 h-16 bg-slate-800 rounded-2xl flex items-center justify-center mb-6 border border-slate-700">
+                <Terminal size={32} className="text-indigo-400" />
               </div>
               <h3 className="text-xl font-medium text-white mb-2">Instalasi Otomatis</h3>
-              <p className="text-gray-400 max-w-md mx-auto mb-8 text-sm leading-relaxed">
+              <p className="text-slate-400 max-w-md mx-auto mb-8 text-sm leading-relaxed">
                 Jalankan perintah di bawah ini pada terminal VPS (Linux) atau Termux (Android) Anda. Skrip ini akan secara otomatis mengunduh, mengkonfigurasi file Python, serta menginstal dependensi yang dibutuhkan (Python3, pip, requests).
               </p>
               
@@ -454,14 +454,14 @@ export default function App() {
                   <button
                     onClick={() => setIsLinkGenerated(true)}
                     disabled={!accountId || !apiToken}
-                    className="mx-auto bg-orange-500 hover:bg-orange-600 disabled:bg-gray-700 disabled:text-gray-400 text-white font-medium py-3 px-6 rounded-lg text-sm flex items-center justify-center gap-2 transition-colors shadow-lg shadow-orange-500/20"
+                    className="mx-auto bg-indigo-500 hover:bg-indigo-600 disabled:bg-slate-700 disabled:text-slate-400 text-white font-medium py-3 px-6 rounded-lg text-sm flex items-center justify-center gap-2 transition-colors shadow-lg shadow-indigo-500/20"
                   >
                     <ExternalLink size={18} />
                     Hasilkan Link Instalasi
                   </button>
                 ) : (
-                  <div className="w-full max-w-2xl bg-black rounded-lg p-4 flex flex-col gap-3 text-left border border-gray-800">
-                    <div className="text-xs font-semibold text-gray-500 uppercase tracking-widest flex items-center gap-2">
+                  <div className="w-full max-w-2xl bg-black rounded-lg p-4 flex flex-col gap-3 text-left border border-slate-800">
+                    <div className="text-xs font-semibold text-slate-500 uppercase tracking-widest flex items-center gap-2">
                       <div className="flex gap-1.5">
                         <div className="w-3 h-3 rounded-full bg-red-500/80"></div>
                         <div className="w-3 h-3 rounded-full bg-yellow-500/80"></div>
@@ -474,7 +474,7 @@ export default function App() {
                     </code>
                     <button 
                       onClick={copyInstallCommand}
-                      className="mt-2 ml-auto text-gray-300 bg-gray-800 hover:bg-gray-700 transition-colors px-4 py-2 rounded-md text-sm font-medium flex items-center gap-2 border border-gray-700"
+                      className="mt-2 ml-auto text-slate-300 bg-slate-800 hover:bg-slate-700 transition-colors px-4 py-2 rounded-md text-sm font-medium flex items-center gap-2 border border-slate-700"
                     >
                       {copied ? <Check size={16} className="text-green-400" /> : <Copy size={16} />}
                       {copied ? 'Tersalin ke Clipboard' : 'Salin Perintah'}
@@ -485,29 +485,29 @@ export default function App() {
           </div>
           
         </div>
-      </main>
+      </motion.main>
       ) : currentView === 'user_select' ? (
-        <main className="max-w-7xl mx-auto p-4 sm:p-6 flex flex-col items-center justify-start min-h-[70vh] pt-2">
+        <motion.main initial={{opacity:0, y:20}} animate={{opacity:1, y:0}} transition={{duration:0.4}} className="max-w-7xl mx-auto p-4 sm:p-6 flex flex-col items-center justify-start min-h-[70vh] pt-2">
           
           {/* Search Bar */}
           <div className="w-full max-w-2xl mb-6 mt-4">
             <div className="relative group">
               <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                <Search size={20} className="text-gray-400 group-focus-within:text-blue-500 transition-colors" />
+                <Search size={20} className="text-slate-400 group-focus-within:text-blue-500 transition-colors" />
               </div>
               <input
                 type="text"
                 placeholder="Cari server user..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-12 pr-4 py-3 bg-white/60 backdrop-blur-md border border-gray-200/80 rounded-2xl text-base font-medium text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition-all shadow-sm"
+                className="w-full pl-12 pr-4 py-3 bg-white/80 backdrop-blur-xl border border-white/50 rounded-2xl text-base shadow-[0_8px_30px_rgb(0,0,0,0.06)] font-medium text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition-all shadow-sm"
               />
             </div>
           </div>
           
           <div className="grid grid-cols-2 gap-4 sm:gap-12 w-full max-w-4xl justify-items-center">
             {(savedUsers || []).filter(user => (user?.name || "").toLowerCase().includes(searchQuery.toLowerCase())).length === 0 ? (
-              <div className="text-gray-500 italic col-span-2 text-center">
+              <div className="text-slate-500 italic col-span-2 text-center">
                 {searchQuery ? 'Pengguna tidak ditemukan.' : 'Belum ada pengguna yang disimpan.'}
               </div>
             ) : (
@@ -519,13 +519,13 @@ export default function App() {
                   "from-blue-500 to-indigo-600",
                   "from-purple-500 to-pink-600",
                   "from-emerald-500 to-teal-600",
-                  "from-orange-500 to-red-600"
+                  "from-indigo-500 to-red-600"
                 ];
                 const glowColors = [
                   "group-hover:shadow-blue-500/30",
                   "group-hover:shadow-purple-500/30",
                   "group-hover:shadow-emerald-500/30",
-                  "group-hover:shadow-orange-500/30"
+                  "group-hover:shadow-indigo-500/30"
                 ];
                 const gradient = gradients[idx % gradients.length];
                 const glow = glowColors[idx % glowColors.length];
@@ -551,8 +551,8 @@ export default function App() {
                         <div className={`w-14 h-14 sm:w-20 sm:h-20 rounded-xl sm:rounded-2xl bg-gradient-to-br ${gradient} flex items-center justify-center mb-3 sm:mb-4 shadow-lg text-white transform group-hover:scale-110 transition-transform duration-500`}>
                           <Server size={32} className="sm:w-10 sm:h-10 w-7 h-7" />
                         </div>
-                        <span className="text-base sm:text-xl font-bold text-gray-900 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-gray-900 group-hover:to-gray-600 transition-all text-center px-1 leading-tight">{user.name}</span>
-                        <span className="text-xs sm:text-sm font-medium text-gray-400 max-w-full truncate text-center mt-1 sm:mt-2 px-2" title={user.accountId}>{user.accountId}</span>
+                        <span className="text-base sm:text-xl font-bold text-slate-900 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-slate-900 group-hover:to-slate-600 transition-all text-center px-1 leading-tight">{user.name}</span>
+                        <span className="text-xs sm:text-sm font-medium text-slate-400 max-w-full truncate text-center mt-1 sm:mt-2 px-2" title={user.accountId}>{user.accountId}</span>
                       </div>
                     </div>
                   </motion.div>
@@ -560,81 +560,81 @@ export default function App() {
               })
             )}
           </div>
-        </main>
+        </motion.main>
       ) : (
-      <main className="max-w-7xl mx-auto p-6">
+      <motion.main initial={{opacity:0, y:20}} animate={{opacity:1, y:0}} transition={{duration:0.4}} className="max-w-7xl mx-auto p-6">
         <motion.div 
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden flex flex-col"
+          className="bg-white/80 backdrop-blur-lg rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.08)] border border-white/50 overflow-hidden flex flex-col"
         >
-          <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center bg-gray-50">
+          <div className="px-6 py-4 border-b border-slate-200 flex justify-between items-center bg-slate-50">
             <div className="flex items-center gap-3">
               <div className="bg-blue-500 text-white p-2 rounded-lg">
                 <CloudFog size={20} />
               </div>
               <div>
-                <h2 className="font-semibold text-gray-900">Server Dashboard</h2>
-                <p className="text-xs text-gray-500">Status & Analitik Penggunaan</p>
+                <h2 className="font-semibold text-slate-900">Server Dashboard</h2>
+                <p className="text-xs text-slate-500">Status & Analitik Penggunaan</p>
               </div>
             </div>
             <button 
               onClick={() => setCurrentView('user_select')}
-              className="text-gray-400 hover:text-gray-600 p-2 rounded-lg hover:bg-gray-200 transition-colors"
+              className="text-slate-400 hover:text-slate-600 p-2 rounded-lg hover:bg-slate-200 transition-colors"
             >
               <X size={20} />
             </button>
           </div>
           
-          <div className="p-6 overflow-y-auto flex-1 bg-gray-50/50">
+          <div className="p-6 overflow-y-auto flex-1 bg-slate-50/50">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                 {/* Stats Cards */}
-                <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm flex items-center gap-4">
+                <div className="bg-white/90 backdrop-blur-xl p-6 rounded-2xl border border-white/50 shadow-[0_8px_30px_rgb(0,0,0,0.06)] flex items-center gap-5 hover:-translate-y-1 transition-transform duration-300">
                   <div className="bg-green-100 text-green-600 p-3 rounded-lg">
                     <Activity size={24} />
                   </div>
                   <div>
-                    <p className="text-sm text-gray-500 font-medium">Trafik Request</p>
-                    <p className="text-2xl font-bold text-gray-900">{trafficCount}</p>
+                    <p className="text-sm text-slate-500 font-medium">Trafik Request</p>
+                    <p className="text-2xl font-bold text-slate-900">{trafficCount}</p>
                   </div>
                 </div>
                 
-                <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm flex items-center gap-4">
+                <div className="bg-white/90 backdrop-blur-xl p-6 rounded-2xl border border-white/50 shadow-[0_8px_30px_rgb(0,0,0,0.06)] flex items-center gap-5 hover:-translate-y-1 transition-transform duration-300">
                   <div className="bg-purple-100 text-purple-600 p-3 rounded-lg">
                     <Activity size={24} />
                   </div>
                   <div>
-                    <p className="text-sm text-gray-500 font-medium">Ping API Cloudflare</p>
-                    <p className="text-2xl font-bold text-gray-900">{pingLatency} ms</p>
+                    <p className="text-sm text-slate-500 font-medium">Ping API Cloudflare</p>
+                    <p className="text-2xl font-bold text-slate-900">{pingLatency} ms</p>
                   </div>
                 </div>
 
-                <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm flex items-center gap-4">
+                <div className="bg-white/90 backdrop-blur-xl p-6 rounded-2xl border border-white/50 shadow-[0_8px_30px_rgb(0,0,0,0.06)] flex items-center gap-5 hover:-translate-y-1 transition-transform duration-300">
                   <div className="bg-blue-100 text-blue-600 p-3 rounded-lg">
                     <User size={24} />
                   </div>
                   <div>
-                    <p className="text-sm text-gray-500 font-medium">Pengguna Aktif</p>
-                    <p className="text-2xl font-bold text-gray-900">{selectedUser}</p>
+                    <p className="text-sm text-slate-500 font-medium">Pengguna Aktif</p>
+                    <p className="text-2xl font-bold text-slate-900">{selectedUser}</p>
                   </div>
                 </div>
               </div>
 
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Sisa Token */}
-                <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden flex flex-col">
-                  <div className="px-5 py-4 border-b border-gray-200 bg-gray-50 font-medium text-sm flex items-center gap-2">
-                    <Brain size={16} className="text-gray-500" />
+                <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
+                  <div className="px-5 py-4 border-b border-slate-200 bg-slate-50 font-medium text-sm flex items-center gap-2">
+                    <Brain size={16} className="text-slate-500" />
                     Sisa Token per Model (Estimasi)
                   </div>
                   <div className="p-5 space-y-4 flex-1 overflow-y-auto">
                     {availableModels.slice(0, 10).map(m => (
                       <div key={m}>
                         <div className="flex justify-between text-xs mb-1">
-                          <span className="font-medium text-gray-700 truncate max-w-[200px]" title={m}>{m.split('/').pop()}</span>
-                          <span className="text-gray-500">Aktif / Tersedia</span>
+                          <span className="font-medium text-slate-700 truncate max-w-[200px]" title={m}>{m.split('/').pop()}</span>
+                          <span className="text-slate-500">Aktif / Tersedia</span>
                         </div>
-                        <div className="w-full bg-gray-100 rounded-full h-1.5 overflow-hidden">
+                        <div className="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
                           <div className="bg-green-500 h-1.5 rounded-full" style={{ width: `${Math.random() * 40 + 60}%` }}></div>
                         </div>
                       </div>
@@ -643,22 +643,22 @@ export default function App() {
                 </div>
 
                 {/* Terminal Log */}
-                <div className="bg-gray-900 rounded-xl border border-gray-800 shadow-sm overflow-hidden flex flex-col h-[350px]">
-                  <div className="px-5 py-3 border-b border-gray-800 bg-gray-950 text-gray-300 font-medium text-sm flex items-center gap-2">
-                    <TerminalSquare size={16} className="text-gray-500" />
+                <div className="bg-[#0D1117] rounded-2xl border border-slate-800 shadow-2xl overflow-hidden flex flex-col h-[350px]">
+                  <div className="px-5 py-3 border-b border-slate-800 bg-[#161B22] text-slate-300 font-medium text-sm flex items-center gap-2">
+                    <TerminalSquare size={16} className="text-slate-500" />
                     Terminal Log Permintaan
                   </div>
                   <div className="p-4 flex-1 overflow-y-auto font-mono text-xs space-y-3">
                     {requestLogs.length === 0 ? (
-                      <div className="text-gray-500 italic">Belum ada riwayat permintaan...</div>
+                      <div className="text-slate-500 italic">Belum ada riwayat permintaan...</div>
                     ) : (
                       requestLogs.map((log, i) => (
-                        <div key={i} className="text-gray-300 border-b border-gray-800 pb-3 mb-3 last:border-0 last:pb-0 last:mb-0">
+                        <div key={i} className="text-slate-300 border-b border-slate-800 pb-3 mb-3 last:border-0 last:pb-0 last:mb-0">
                           <div className="flex items-center justify-between mb-1">
                             <div className="flex items-center gap-2">
-                              <span className="text-gray-500">[{log.time}]</span>
+                              <span className="text-slate-500">[{log.time}]</span>
                               {log.source && (
-                                <span className={`px-1.5 py-0.5 rounded text-[10px] uppercase font-bold ${log.source === 'Web UI' ? 'bg-blue-500/20 text-blue-400' : 'bg-orange-500/20 text-orange-400'}`}>
+                                <span className={`px-1.5 py-0.5 rounded text-[10px] uppercase font-bold ${log.source === 'Web UI' ? 'bg-blue-500/20 text-blue-400' : 'bg-indigo-500/20 text-indigo-400'}`}>
                                   {log.source}
                                 </span>
                               )}
@@ -666,8 +666,8 @@ export default function App() {
                             {log.status === 200 ? <span className="text-green-400 bg-green-400/10 px-1.5 rounded">SUCCESS</span> : <span className="text-red-400 bg-red-400/10 px-1.5 rounded">ERROR</span>}
                           </div>
                           <div className="text-blue-400 truncate mb-1">Model: {log.model.split('/').pop()}</div>
-                          <div className="text-gray-400">Ping: {log.latency}ms</div>
-                          <div className="text-gray-300 truncate opacity-80 mt-1 pl-2 border-l-2 border-gray-700">&gt; {log.prompt}</div>
+                          <div className="text-slate-400">Ping: {log.latency}ms</div>
+                          <div className="text-slate-300 truncate opacity-80 mt-1 pl-2 border-l-2 border-slate-700">&gt; {log.prompt}</div>
                         </div>
                       ))
                     )}
@@ -676,13 +676,13 @@ export default function App() {
               </div>
             </div>
           </motion.div>
-        </main>
+        </motion.main>
       )}
       {/* Bottom Navigation Bar */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-2 px-6 flex justify-around items-center z-50 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+      <div className="fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-[400px] bg-white/80 backdrop-blur-xl border border-white/50 p-2 px-4 flex justify-around items-center z-50 shadow-[0_20px_40px_rgb(0,0,0,0.1)] rounded-2xl">
         <button
           onClick={() => setCurrentView('dashboard')}
-          className={`flex flex-col items-center gap-1 p-2 rounded-lg transition-colors ${currentView === 'dashboard' ? 'text-blue-600' : 'text-gray-500 hover:bg-gray-50'}`}
+          className={`flex flex-col items-center gap-1 p-2.5 w-16 rounded-xl transition-all duration-300 ${currentView === 'dashboard' ? 'bg-indigo-50 text-indigo-600 scale-105 shadow-sm' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50'}`}
         >
           <LayoutDashboard size={20} />
           <span className="text-[10px] font-medium uppercase tracking-wider">Dasbor</span>
@@ -690,7 +690,7 @@ export default function App() {
         
         <button
           onClick={() => setCurrentView('generator')}
-          className={`flex flex-col items-center gap-1 p-2 rounded-lg transition-colors ${currentView === 'generator' ? 'text-orange-600' : 'text-gray-500 hover:bg-gray-50'}`}
+          className={`flex flex-col items-center gap-1 p-2.5 w-20 rounded-xl transition-all duration-300 ${currentView === 'generator' ? 'bg-indigo-50 text-indigo-600 scale-105 shadow-sm' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50'}`}
         >
           <FileText size={20} />
           <span className="text-[10px] font-medium uppercase tracking-wider">Dokumentasi</span>
@@ -698,7 +698,7 @@ export default function App() {
         
         <button
           onClick={() => setCurrentView('user_select')}
-          className={`flex flex-col items-center gap-1 p-2 rounded-lg transition-colors ${currentView === 'user_select' ? 'text-purple-600' : 'text-gray-500 hover:bg-gray-50'}`}
+          className={`flex flex-col items-center gap-1 p-2.5 w-20 rounded-xl transition-all duration-300 ${currentView === 'user_select' ? 'bg-purple-50 text-purple-600 scale-105 shadow-sm' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50'}`}
         >
           <Users size={20} />
           <span className="text-[10px] font-medium uppercase tracking-wider">List User</span>

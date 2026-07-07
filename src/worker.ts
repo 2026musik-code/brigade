@@ -515,9 +515,9 @@ INNER_EOF
 
 echo -e "\\\\e[1;32m[+] Selesai! Menjalankan antarmuka CLI...\\\\e[0m"
 if command -v python3 >/dev/null; then
-    python3 test_ai.py
+    python3 test_ai.py < /dev/tty
 else
-    python test_ai.py
+    python test_ai.py < /dev/tty
 fi`;
 
     if (isHono) return c.text(bashScript);
